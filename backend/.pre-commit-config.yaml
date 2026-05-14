@@ -1,0 +1,49 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-yaml
+        files: ^backend/
+      - id: check-toml
+        files: ^backend/
+      - id: end-of-file-fixer
+        files: ^backend/
+      - id: trailing-whitespace
+        files: ^backend/
+      - id: check-added-large-files
+        args:
+          - --maxkb=1024
+          - --enforce-all
+        files: ^backend/
+        exclude: |
+          (?x)^(
+              uv.lock
+          )$
+
+  - repo: https://github.com/sirosen/texthooks
+    rev: 0.6.8
+    hooks:
+      - id: fix-smartquotes
+        files: ^backend/
+      - id: fix-spaces
+        files: ^backend/
+      - id: fix-ligatures
+        files: ^backend/
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.12
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+        files: ^backend/
+      - id: ruff-format
+        files: ^backend/
+
+  - repo: local
+    hooks:
+      - id: pyright
+        name: pyright
+        entry: backend/.venv/bin/pyright
+        language: system
+        files: ^backend/
+        pass_filenames: false
