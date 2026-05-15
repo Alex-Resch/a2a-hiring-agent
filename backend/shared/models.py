@@ -29,6 +29,9 @@ class CalendarPhase1Request(BaseModel):
     """Request payload to check busy/free slots."""
 
     selected_profiles: list[SelectedProfile]
+    work_start_hour: int = 9
+    work_end_hour: int = 18
+    appointment_duration: int = 60
 
 
 class CalendarPhase2Request(BaseModel):

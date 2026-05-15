@@ -34,6 +34,9 @@ class AgentState(BaseModel):
     """State of the agent."""
 
     selected_profiles: list[SelectedProfile]
+    work_start_hour: int
+    work_end_hour: int
+    appointment_duration: int
     busy_slots: list[BusySlot] = []
     free_slots: list[FreeSlot] = []
     selected_slot: FreeSlot | None = None

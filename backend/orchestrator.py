@@ -13,10 +13,12 @@ import httpx
 from typing import AsyncGenerator
 
 from agents.agent_3_email_agent.state import FreeSlot
-from shared.models import SearchRequest, SelectedProfile
+from shared.models import SearchRequest, SelectedProfile, CalendarPhase1Request
 
 
-async def run_calendar_phase1(selected_profiles: list) -> AsyncGenerator[dict, None]:
+async def run_calendar_phase1(
+    request: CalendarPhase1Request,
+) -> AsyncGenerator[dict, None]:
     """Ask the calendar agent for busy/free slots for given profiles."""
     async with httpx.AsyncClient(timeout=300) as http_client:
         yield {"status": "Agent 3 is checking calendar..."}
@@ -27,24 +29,18 @@ async def run_calendar_phase1(selected_profiles: list) -> AsyncGenerator[dict, N
         card3 = await resolver3.get_agent_card()
         client3 = A2AClient(httpx_client=http_client, agent_card=card3)
 
+        payload = {
+            "selected_profiles": [p.model_dump() for p in request.selected_profiles],
+            "work_start_hour": request.work_start_hour,
+            "work_end_hour": request.work_end_hour,
+            "appointment_duration": request.appointment_duration,
+        }
         request3 = SendMessageRequest(
             id=uuid4().hex,
             params=MessageSendParams(
                 message=Message(
                     role=Role.user,
-                    parts=[
-                        Part(
-                            root=TextPart(
-                                text=json.dumps(
-                                    {
-                                        "selected_profiles": [
-                                            p.model_dump() for p in selected_profiles
-                                        ]
-                                    }
-                                )
-                            )
-                        )
-                    ],
+                    parts=[Part(root=TextPart(text=json.dumps(payload)))],
                     message_id=uuid4().hex,
                 )
             ),

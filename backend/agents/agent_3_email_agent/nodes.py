@@ -15,11 +15,6 @@ SCOPES = [
     "https://www.googleapis.com/auth/gmail.send",
 ]
 
-# The user needs to set this in the frontend later
-WORK_START_HOUR = 9
-WORK_END_HOUR = 18
-SLOT_DURATION = timedelta(minutes=60)
-
 
 def get_credentials():
     """Load OAuth credentials, running the local flow if needed."""
@@ -83,6 +78,7 @@ def check_busy_slots(state: AgentState):
 def get_free_slots(state: AgentState):
     """Compute free slots for the next week within work hours."""
     busy_slots = sorted(state.busy_slots, key=lambda s: s.start)
+    duration = timedelta(minutes=state.appointment_duration)
 
     free_slots = []
     now = datetime.now(timezone.utc)
@@ -91,33 +87,33 @@ def get_free_slots(state: AgentState):
         day = (now + timedelta(days=day_offset)).date()
 
         work_start = datetime(
-            day.year, day.month, day.day, WORK_START_HOUR, tzinfo=timezone.utc
+            day.year, day.month, day.day, state.work_start_hour, tzinfo=timezone.utc
         )
         work_end = datetime(
-            day.year, day.month, day.day, WORK_END_HOUR, tzinfo=timezone.utc
+            day.year, day.month, day.day, state.work_end_hour, tzinfo=timezone.utc
         )
 
         busy_slots_day = [s for s in busy_slots if s.start.date() == day]
 
         for busy_slot in busy_slots_day:
-            while work_start + SLOT_DURATION <= busy_slot.start:
+            while work_start + duration <= busy_slot.start:
                 free_slots.append(
                     FreeSlot(
                         start=work_start,
-                        end=work_start + SLOT_DURATION,
+                        end=work_start + duration,
                     )
                 )
-                work_start += SLOT_DURATION
+                work_start += duration
             work_start = max(work_start, busy_slot.end)
 
-        while work_start + SLOT_DURATION <= work_end:
+        while work_start + duration <= work_end:
             free_slots.append(
                 FreeSlot(
                     start=work_start,
-                    end=work_start + SLOT_DURATION,
+                    end=work_start + duration,
                 )
             )
-            work_start += SLOT_DURATION
+            work_start += duration
 
     return state.model_copy(update={"free_slots": free_slots})
 

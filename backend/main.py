@@ -34,7 +34,7 @@ async def calendar_slots(request: CalendarPhase1Request):
     """Stream available interview slots for selected profiles."""
 
     async def stream():
-        async for event in run_calendar_phase1(request.selected_profiles):
+        async for event in run_calendar_phase1(request):
             yield f"data: {json.dumps(event)}\n\n"
 
     return StreamingResponse(stream(), media_type="text/event-stream")
