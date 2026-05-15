@@ -147,7 +147,7 @@ curl -N -X POST http://localhost:8000/calendar/schedule \
 
 ## Notes and current limitations
 
-- GitHub query uses `languages`, `locations`, and `min_public_repos`; other search fields are accepted but not yet used.
+- GitHub query uses all request fields; some are mapped heuristically (keyword search, created-date approximation, and stars qualifier support depends on GitHub user search behavior).
 - GitHub fetch is intentionally shallow: first 2 users, 1 repo per user, 1 commit per repo.
 - Only profiles with a public email address are kept.
 - Calendar availability is computed for the next 7 days, UTC, with work hours 09:00–18:00 and 60-minute slots.

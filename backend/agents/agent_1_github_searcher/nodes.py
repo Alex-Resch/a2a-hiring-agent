@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timedelta, timezone
 
 from agents.agent_1_github_searcher.state import (
     AgentState,
@@ -12,16 +13,51 @@ from shared.functions import fetch
 
 def build_github_query(criteria: dict) -> str:
     """Build a GitHub search query string from structured criteria."""
-    parts = []
+    parts: list[str] = []
+
+    def add_or_group(tokens: list[str]) -> None:
+        """Append a single token or a parenthesized OR-group, skipping empty values to keep query logic stable."""
+        clean = [t for t in tokens if t]
+        if not clean:
+            return
+        if len(clean) == 1:
+            parts.append(clean[0])
+        else:
+            parts.append(f"({' OR '.join(clean)})")
 
     if langs := criteria.get("languages"):
-        parts.append(" OR ".join(f"language:{lang}" for lang in langs))
+        add_or_group([f"language:{lang}" for lang in langs])
 
-    for loc in criteria.get("locations", []):
-        parts.append(f"location:{loc}")
+    if locations := criteria.get("locations"):
+        add_or_group([f"location:{loc}" for loc in locations])
 
     if (repos := criteria.get("min_public_repos", 0)) > 0:
         parts.append(f"repos:>={repos}")
+
+    if (min_stars := criteria.get("min_stars", 0)) > 0:
+        parts.append(f"stars:>={min_stars}")
+
+    if (active_months := criteria.get("active_within_months", 0)) > 0:
+        since = datetime.now(timezone.utc) - timedelta(days=30 * active_months)
+        parts.append(f"created:>={since.date().isoformat()}")
+
+    if (min_years := criteria.get("min_years_experience", 0)) > 0:
+        add_or_group(
+            [
+                f'"{min_years} years"',
+                f'"{min_years}+ years"',
+                f'"{min_years} yrs"',
+            ]
+        )
+
+    keyword_groups = [
+        criteria.get("frameworks", []),
+        criteria.get("domains", []),
+        criteria.get("experience_levels", []),
+        criteria.get("availability", []),
+    ]
+    for group in keyword_groups:
+        add_or_group([f'"{item}"' for item in group])
 
     return " ".join(parts) or "type:user"
 
