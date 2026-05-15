@@ -43,6 +43,20 @@ Be objective, fair, and base your evaluation only on the data provided. Do not m
 """
 
 
+def build_user_prompt(profile_str: str, state: AgentState):
+    return f"""
+    Here are the details about the candidate:
+    **{profile_str}**
+
+    The recruiter is looking for the following criteria:
+    **{state.user_input}**
+
+    Adjust your scoring based on how well the candidate matches these criteria.
+    A strong match should significantly increase the overall score.
+    A poor match should decrease it, even if the candidate is technically strong overall.
+    """
+
+
 def score_profiles(state: AgentState):
     scored_profiles: list[ProfileScore] = []
 
@@ -52,7 +66,7 @@ def score_profiles(state: AgentState):
             response_model=ProfileScore,
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": str(profile)},
+                {"role": "user", "content": build_user_prompt(str(profile), state)},
             ],
         )
         result.email = profile.email

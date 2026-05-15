@@ -15,8 +15,15 @@ from agents.agent_2_screener.state import AgentState
 class GithubScreenerExecutor(AgentExecutor):
     async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:
         user_input = context.get_user_input()
-        profiles_details = json.loads(user_input)
-        result = app.invoke(AgentState(profiles_details=profiles_details))
+        data = json.loads(user_input)
+        profiles_details = data["profiles"]
+        search_criteria = data["user_input"]
+        result = app.invoke(
+            AgentState(
+                profiles_details=profiles_details,
+                user_input=search_criteria,
+            )
+        )
         output = json.dumps([p.model_dump() for p in result["scored_profiles"]])
         await event_queue.enqueue_event(new_agent_text_message(output))
 

@@ -122,5 +122,6 @@ def get_profile_details(state: AgentState) -> AgentState:
             location=user.get("location"),
             repos_details=repo_details,
         )
-        profile_details.append(profile_detail)
+        if profile_detail.email:
+            profile_details.append(profile_detail)
     return state.model_copy(update={"profiles_details": profile_details})

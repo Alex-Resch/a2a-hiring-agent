@@ -146,12 +146,21 @@ async def run(request: SearchRequest) -> AsyncGenerator[dict, None]:
         card2 = await resolver2.get_agent_card()
         client2 = A2AClient(httpx_client=http_client, agent_card=card2)
 
+        # Payload format for Agent 2:
+        # - "profiles": list of profile details from Agent 1
+        # - "user_input": original search criteria from the recruiter,
+        #   used by Agent 2 to score profiles relative to the search context
+        payload = {
+            "profiles": profiles,
+            "user_input": user_input,
+        }
+
         request2 = SendMessageRequest(
             id=uuid4().hex,
             params=MessageSendParams(
                 message=Message(
                     role=Role.user,
-                    parts=[Part(root=TextPart(text=profiles_text))],
+                    parts=[Part(root=TextPart(text=json.dumps(payload)))],
                     message_id=uuid4().hex,
                 )
             ),
