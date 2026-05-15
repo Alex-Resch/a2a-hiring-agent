@@ -1,0 +1,6 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+.step-no-line::before {
+    --step-bg: var(--color-base-300) !important;
+}
