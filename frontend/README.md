@@ -1,14 +1,15 @@
 # A2A Hiring Agent Frontend
 
-This contains the frontend for an AI-assisted Github hiring workflow. The UI lets users define search criteria, starts a multi-step agent pipeline, shows ranked candidate profiles, and offers interview scheduling via free calendar slots.
+Short description
+This repository contains the frontend for an AI-assisted hiring workflow. The UI lets users define search criteria, starts a multi-step agent pipeline, shows ranked candidate profiles, and offers interview scheduling via free calendar slots. The backend is not part of this repo.
 
 ## Product idea in 30 seconds
 
 - You define tech stack, domain, location, and seniority.
 - Agent 1 searches GitHub for matching profiles.
 - Agent 2 evaluates and ranks the top candidates.
-- You select candidates and you can give permission to the programm so it connects to your google calendar to see your free slots.
-- Agent 3 schedules the interview and send inventation emails to the selected candidates if their email is public.
+- You select candidates and request free interview slots.
+- Optional: Agent 3 schedules the interview.
 
 ## Features
 
@@ -34,10 +35,42 @@ This contains the frontend for an AI-assisted Github hiring workflow. The UI let
 
 ## Local setup
 
-```bas
+```bash
 npm install
 npm run dev
 ```
+
+## Backend contract (expected)
+
+The UI expects streaming responses in the format `data: {json}` (SSE-like).
+The base URL is currently hardcoded in `src/shared/functions.ts`.
+
+- `POST /search`
+    - Request: `SearchFormData`
+    - Response (streaming): `StreamResponse` with `status` and `scored_profiles`
+
+- `POST /calendar/slots`
+    - Request: `CalendarPhase1Request`
+    - Response (streaming): `StreamResponse` with `status` and `free_slots`
+
+- `POST /calendar/schedule`
+    - Request: `CalendarPhase2Request`
+    - Response (streaming): `StreamResponse` with `status`
+
+Example streaming chunk:
+
+```text
+data: {"status":"Agent 1 is searching..."}
+```
+
+Key models are defined in `src/shared/models.ts` and `src/shared/types.ts`.
+
+## Key project areas
+
+- `src/pages/mainPage/MainPage.tsx`: search form and agent status
+- `src/pages/resultsPage/ResultsPage.tsx`: ranking and selection
+- `src/pages/resultsPage/FreeSlotsModal.tsx`: slot selection
+- `src/shared/functions.ts`: `streamFetch` SSE parsing
 
 ## Backend
 
@@ -45,4 +78,21 @@ Be sure to run the backend as the README.md file says in this repo backend folde
 
 ## Known limitation (showcase)
 
-In `src/pages/resultsPage/useSetFreeSlot.ts`, `selectedProfiles` is currently replaced with mock data. For real end-to-end demos, remove this.
+In `src/pages/resultsPage/useSetFreeSlot.ts`, `selectedProfiles` is currently replaced with mock data. For real end-to-end demos, remove this or adapt it to the backend.
+
+## Scripts
+
+```bash
+npm run dev
+npm run build
+npm run preview
+npm run lint
+```
+
+## Contributing
+
+PRs and issues are welcome. Please describe the problem you are solving and how it was tested.
+
+## License
+
+No license specified. If you want this to be open source, add an appropriate license file.
