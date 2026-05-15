@@ -21,7 +21,7 @@ class SelectedProfile(BaseModel):
     """Details of a selected GitHub profile."""
 
     username: str
-    email: str
+    email: str | None = None
 
 
 class AgentState(BaseModel):

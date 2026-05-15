@@ -216,3 +216,11 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# secrets
+credentials.json
+token.json
+
+# Idea
+.DS_Store
+.idea/

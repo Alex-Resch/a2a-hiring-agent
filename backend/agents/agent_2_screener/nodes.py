@@ -55,6 +55,7 @@ def score_profiles(state: AgentState):
                 {"role": "user", "content": str(profile)},
             ],
         )
+        result.email = profile.email
         scored_profiles.append(result)
 
     return {"scored_profiles": scored_profiles}

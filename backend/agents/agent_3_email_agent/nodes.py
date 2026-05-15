@@ -172,6 +172,9 @@ def send_interview_invitations(state: AgentState):
         if not state.selected_slot:
             raise ValueError("No Free Slot was selected.")
 
+        if not profile.email:
+            raise ValueError("Profile has no email address.")
+
         try:
             message = build_email_message(profile.username, state.selected_slot)
             message["to"] = profile.email

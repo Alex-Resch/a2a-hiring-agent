@@ -41,12 +41,12 @@ repos:
 
   - repo: local
     hooks:
-      # - id: pyright
-      #   name: pyright
-      #   entry: backend/.venv/bin/pyright
-      #   language: system
-      #   files: ^backend/
-      #   pass_filenames: false
+      - id: pyright
+        name: pyright
+        entry: backend/.venv/bin/pyright
+        language: system
+        files: ^backend/
+        pass_filenames: false
 
       - id: lint-staged
         name: lint-staged

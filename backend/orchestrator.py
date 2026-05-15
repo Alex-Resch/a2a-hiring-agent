@@ -12,7 +12,8 @@ from a2a.types import (
 import httpx
 from typing import AsyncGenerator
 
-from shared.models import SearchRequest
+from agents.agent_3_email_agent.state import FreeSlot
+from shared.models import SearchRequest, SelectedProfile
 
 
 async def run_calendar_phase1(selected_profiles: list) -> AsyncGenerator[dict, None]:
@@ -34,7 +35,11 @@ async def run_calendar_phase1(selected_profiles: list) -> AsyncGenerator[dict, N
                         Part(
                             root=TextPart(
                                 text=json.dumps(
-                                    {"selected_profiles": selected_profiles}
+                                    {
+                                        "selected_profiles": [
+                                            p.model_dump() for p in selected_profiles
+                                        ]
+                                    }
                                 )
                             )
                         )
@@ -61,7 +66,8 @@ async def run_calendar_phase1(selected_profiles: list) -> AsyncGenerator[dict, N
 
 
 async def run_calendar_phase2(
-    selected_profiles: list, selected_slot: dict, busy_slots: list, free_slots: list
+    selected_profiles: list[SelectedProfile],
+    selected_slot: FreeSlot,
 ) -> AsyncGenerator[dict, None]:
     async with httpx.AsyncClient(timeout=300) as http_client:
         yield {"status": "Agent 3 is scheduling appointment..."}
@@ -73,10 +79,8 @@ async def run_calendar_phase2(
         client3 = A2AClient(httpx_client=http_client, agent_card=card3)
 
         payload = {
-            "selected_profiles": selected_profiles,
-            "selected_slot": selected_slot,
-            "busy_slots": busy_slots,
-            "free_slots": free_slots,
+            "selected_profiles": [p.model_dump() for p in selected_profiles],
+            "selected_slot": selected_slot.model_dump(mode="json"),
         }
 
         request3 = SendMessageRequest(
@@ -90,19 +94,14 @@ async def run_calendar_phase2(
             ),
         )
 
-        response3 = await client3.send_message(request3)
-
         try:
-            result_text = response3.root.result.parts[0].root.text  # type: ignore
-            result = json.loads(result_text)
+            await client3.send_message(request3)
         except Exception as e:
             yield {"status": "Error", "error": f"Agent 3 failed: {str(e)}"}
             return
 
         yield {
             "status": "Done",
-            "created_events": result["created_events"],
-            "emails_sent": result["emails_sent"],
         }
 
 

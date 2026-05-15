@@ -117,6 +117,7 @@ def get_profile_details(state: AgentState) -> AgentState:
 
         profile_detail = ProfileDetails(
             name=user.get("login"),
+            email=user.get("email"),
             bio=user.get("bio"),
             location=user.get("location"),
             repos_details=repo_details,

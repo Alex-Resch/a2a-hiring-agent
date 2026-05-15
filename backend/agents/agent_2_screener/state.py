@@ -38,6 +38,7 @@ class ProfileDetails(BaseModel):
     """Details of a GitHub profile."""
 
     name: str
+    email: str | None
     bio: str | None
     location: str | None
     repos_details: list[RepoDetails] = []
@@ -47,6 +48,7 @@ class ProfileScore(BaseModel):
     """Score of a GitHub profile."""
 
     name: str
+    email: str | None
     overall_score: float
     code_quality_score: float
     activity_score: float
@@ -61,4 +63,5 @@ class AgentState(BaseModel):
     """State of the agent."""
 
     profiles_details: list[ProfileDetails]
+    # search_details: dict[str, str]
     scored_profiles: list[ProfileScore] = []

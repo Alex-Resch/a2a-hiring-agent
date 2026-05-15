@@ -1,4 +1,5 @@
 import json
+
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -41,8 +42,6 @@ async def calendar_schedule(request: CalendarPhase2Request):
         async for event in run_calendar_phase2(
             request.selected_profiles,
             request.selected_slot,
-            request.busy_slots,
-            request.free_slots,
         ):
             yield f"data: {json.dumps(event)}\n\n"
 

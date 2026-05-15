@@ -38,6 +38,7 @@ class ProfileDetails(BaseModel):
     """Details of a GitHub profile."""
 
     name: str
+    email: str | None
     bio: str | None
     location: str | None
     repos_details: list[RepoDetails] = []

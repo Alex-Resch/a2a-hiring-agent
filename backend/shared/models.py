@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 
+from agents.agent_3_email_agent.state import FreeSlot
+
 
 class SearchRequest(BaseModel):
     languages: list[str] = []
@@ -14,12 +16,15 @@ class SearchRequest(BaseModel):
     min_stars: int = 0
 
 
+class SelectedProfile(BaseModel):
+    username: str
+    email: str | None = None
+
+
 class CalendarPhase1Request(BaseModel):
-    selected_profiles: list[dict]
+    selected_profiles: list[SelectedProfile]
 
 
 class CalendarPhase2Request(BaseModel):
-    selected_profiles: list[dict]
-    selected_slot: dict
-    busy_slots: list[dict]
-    free_slots: list[dict]
+    selected_profiles: list[SelectedProfile]
+    selected_slot: FreeSlot
