@@ -26,7 +26,7 @@ Create a local `.env` (do not commit it):
 
 ```dotenv
 GITHUB_TOKEN=your_github_token
-LLM_PROVIDER_API_KEY=your_llm_api_key  # e.g. GEMINI_API_KEY
+GEMINI_API_KEY=your_llm_api_key  # Insert here any LLM Provider API KEY you want. E.g. ANTHROPIC_API_KEY
 ```
 
 Place your Google OAuth client in `credentials.json` (local only). The OAuth flow creates `token.json`. These files contain sensitive credentials and should never be committed.
