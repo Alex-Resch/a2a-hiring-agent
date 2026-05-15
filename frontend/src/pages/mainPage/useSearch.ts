@@ -4,7 +4,7 @@ import type { ProfileScore, StreamResponse } from '../../shared/models';
 import { streamFetch } from '../../shared/functions.ts';
 
 export function useSearch() {
-    const [modalOpen, setModalOpen] = useState(true);
+    const [modalOpen, setModalOpen] = useState(false);
     const [agentOneStarted, setAgentOneStarted] = useState(false);
     const [agentOneFinished, setAgentOneFinished] = useState(false);
     const [agentTwoStarted, setAgentTwoStarted] = useState(false);
@@ -13,6 +13,8 @@ export function useSearch() {
     const [statusText, setStatusText] = useState('');
 
     const onSubmit = async (data: SearchFormData) => {
+        setModalOpen(true);
+
         await streamFetch('/search', data, (response: StreamResponse) => {
             if (response.status) setStatusText(response.status);
 
