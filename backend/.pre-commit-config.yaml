@@ -41,9 +41,16 @@ repos:
 
   - repo: local
     hooks:
-      - id: pyright
-        name: pyright
-        entry: backend/.venv/bin/pyright
+      # - id: pyright
+      #   name: pyright
+      #   entry: backend/.venv/bin/pyright
+      #   language: system
+      #   files: ^backend/
+      #   pass_filenames: false
+
+      - id: lint-staged
+        name: lint-staged
+        entry: bash -c 'cd frontend && npx lint-staged'
         language: system
-        files: ^backend/
+        files: ^frontend/
         pass_filenames: false

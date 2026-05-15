@@ -6,14 +6,14 @@ export interface ProfileScore {
     activity_score: number;
     technical_breadth_score: number;
     community_impact_score: number;
-    strengths: string[]
-    weaknesses: string[]
-    reasoning: string
+    strengths: string[];
+    weaknesses: string[];
+    reasoning: string;
 }
 
 export interface FreeSlot {
-    start: Date
-    end: Date
+    start: Date;
+    end: Date;
 }
 
 export interface SelectedProfile {
@@ -22,6 +22,13 @@ export interface SelectedProfile {
 }
 
 export interface CalendarPhase2Request {
-    selected_profiles: SelectedProfile[]
-    selected_slot: FreeSlot
+    selected_profiles: SelectedProfile[];
+    selected_slot: FreeSlot;
+}
+
+export interface StreamResponse {
+    status?: string;
+    scored_profiles?: ProfileScore[];
+    free_slots?: FreeSlot[];
+    error?: string;
 }

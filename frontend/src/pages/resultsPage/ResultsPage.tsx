@@ -1,44 +1,64 @@
-import { useLocation, useNavigate } from "react-router-dom"
-import {TrendingUp, TrendingDown, Code2, Activity, Layers, Users, ArrowLeft, X} from "lucide-react"
-import type {ProfileScore, SelectedProfile} from "../../shared/models"
-import {useState} from "react"
-import PageHeader from "../../shared/components/PageHeader"
-import {useSetSelected} from "./useSetSelected.ts";
-import FreeSlotsModal from "./FreeSlotsModal.tsx";
+import { useLocation, useNavigate } from 'react-router-dom';
+import { TrendingUp, TrendingDown, Code2, Activity, Layers, Users, ArrowLeft, X } from 'lucide-react';
+import type { ProfileScore, SelectedProfile } from '../../shared/models';
+import { useState } from 'react';
+import PageHeader from '../../shared/components/PageHeader';
+import { useSetSelected } from './useSetSelected.ts';
+import FreeSlotsModal from './FreeSlotsModal.tsx';
 
 const SCORE_CATEGORIES = [
-    { key: "code_quality_score",        label: "Code Quality",      icon: <Code2 size={12} />,     color: "text-primary" },
-    { key: "activity_score",            label: "Activity",          icon: <Activity size={12} />,   color: "text-secondary" },
-    { key: "technical_breadth_score",   label: "Tech Breadth",      icon: <Layers size={12} />,     color: "text-accent" },
-    { key: "community_impact_score",    label: "Community Impact",  icon: <Users size={12} />,      color: "text-info" },
-] as const
+    {
+        key: 'code_quality_score',
+        label: 'Code Quality',
+        icon: <Code2 size={12} />,
+        color: 'text-primary',
+    },
+    {
+        key: 'activity_score',
+        label: 'Activity',
+        icon: <Activity size={12} />,
+        color: 'text-secondary',
+    },
+    {
+        key: 'technical_breadth_score',
+        label: 'Tech Breadth',
+        icon: <Layers size={12} />,
+        color: 'text-accent',
+    },
+    {
+        key: 'community_impact_score',
+        label: 'Community Impact',
+        icon: <Users size={12} />,
+        color: 'text-info',
+    },
+] as const;
 
 function ScoreRing({ score }: { score: number }) {
-    const color = score >= 75 ? "text-success" : score >= 50 ? "text-warning" : "text-error"
+    const color = score >= 75 ? 'text-success' : score >= 50 ? 'text-warning' : 'text-error';
     return (
         <div
             className={`radial-progress ${color} font-bold text-sm`}
-            style={{ "--value": score, "--size": "3.5rem", "--thickness": "4px" } as React.CSSProperties}
+            style={
+                {
+                    '--value': score,
+                    '--size': '3.5rem',
+                    '--thickness': '4px',
+                } as React.CSSProperties
+            }
             aria-label={`Score: ${score}`}
         >
             {score}
         </div>
-    )
+    );
 }
 
-function CandidateCard({ profile, rank, selected, onToggle }: {
-    profile: ProfileScore
-    rank: number
-    selected: boolean
-    onToggle: () => void
-}) {
-    const [expanded, setExpanded] = useState(false)
-    const rankColors = ["badge-primary", "badge-secondary", "badge-accent"]
+function CandidateCard({ profile, rank, selected, onToggle }: { profile: ProfileScore; rank: number; selected: boolean; onToggle: () => void }) {
+    const [expanded, setExpanded] = useState(false);
+    const rankColors = ['badge-primary', 'badge-secondary', 'badge-accent'];
 
     return (
-        <div className={`card bg-base-100 border shadow-sm transition-all ${selected ? "border-primary" : "border-base-300"}`}>
+        <div className={`card bg-base-100 border shadow-sm transition-all ${selected ? 'border-primary' : 'border-base-300'}`}>
             <div className="card-body gap-4 p-5">
-
                 {/* Header */}
                 <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
@@ -46,12 +66,7 @@ function CandidateCard({ profile, rank, selected, onToggle }: {
                         <span className={`badge ${rankColors[rank]} badge-sm font-bold`}>#{rank + 1}</span>
                         <h4 className="font-semibold text-lg">{profile.name}</h4>
                     </div>
-                    <input
-                        type="checkbox"
-                        className="checkbox checkbox-primary checkbox-sm"
-                        checked={selected}
-                        onChange={onToggle}
-                    />
+                    <input type="checkbox" className="checkbox checkbox-primary checkbox-sm" checked={selected} onChange={onToggle} />
                 </div>
 
                 {/* Sub-scores */}
@@ -68,10 +83,8 @@ function CandidateCard({ profile, rank, selected, onToggle }: {
 
                 {/* Collapsible Strengths & Weaknesses */}
                 <div className="collapse collapse-arrow border border-base-300 rounded-box">
-                    <input type="checkbox" checked={expanded} onChange={() => setExpanded(p => !p)} />
-                    <div className="collapse-title text-xs font-semibold py-2 min-h-0">
-                        Strengths & Weaknesses
-                    </div>
+                    <input type="checkbox" checked={expanded} onChange={() => setExpanded((p) => !p)} />
+                    <div className="collapse-title text-xs font-semibold py-2 min-h-0">Strengths & Weaknesses</div>
                     <div className="collapse-content">
                         <div className="grid grid-cols-2 gap-3 text-xs pt-1">
                             <div>
@@ -96,54 +109,51 @@ function CandidateCard({ profile, rank, selected, onToggle }: {
                             </div>
                         </div>
                         <p className="text-xs font-semibold text-base-content/70 mt-3 mb-1">Agent 2 Reasoning:</p>
-                        <p className="text-xs text-base-content/50 leading-relaxed">
-                            {profile.reasoning}
-                        </p>
+                        <p className="text-xs text-base-content/50 leading-relaxed">{profile.reasoning}</p>
                     </div>
                 </div>
             </div>
         </div>
-    )
+    );
 }
 
 export default function ResultsPage() {
-    const { state } = useLocation()
-    const navigate = useNavigate()
-    const scoredProfiles: ProfileScore[] = state?.scoredProfiles ?? []
-    const sorted = [...scoredProfiles].sort((a, b) => b.overall_score - a.overall_score)
-    const [selected, setSelected] = useState<SelectedProfile[]>([])
-    const [showSlotModal, setShowSlotModal] = useState(true)
-    const [appointmentDone, setAppointmentDone] = useState(false)
+    const { state } = useLocation();
+    const navigate = useNavigate();
+    const scoredProfiles: ProfileScore[] = state?.scoredProfiles ?? [];
+    const sorted = [...scoredProfiles].sort((a, b) => b.overall_score - a.overall_score);
+    const [selected, setSelected] = useState<SelectedProfile[]>([]);
+    const [showSlotModal, setShowSlotModal] = useState(true);
+    const [appointmentDone, setAppointmentDone] = useState(false);
 
-    const { onSubmit, freeSlots, isError, agentThreeStarted, agentThreeFinished } = useSetSelected()
+    const { onSubmit, freeSlots, isError, agentThreeStarted, agentThreeFinished } = useSetSelected();
 
     const toggleSelect = (username: string, email: string | null) => {
-        const isSelected = selected.some(p => p.username === username)
+        const isSelected = selected.some((p) => p.username === username);
 
         if (!isSelected) {
-            setSelected(prev => [...prev, { username, email }])
+            setSelected((prev) => [...prev, { username, email }]);
         } else {
-            setSelected(prev => prev.filter(p => p.username !== username))
+            setSelected((prev) => prev.filter((p) => p.username !== username));
         }
-    }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setShowSlotModal(true)
-        await onSubmit(selected)
-    }
+        e.preventDefault();
+        setShowSlotModal(true);
+        await onSubmit(selected);
+    };
 
     return (
         <form onSubmit={handleSubmit}>
             <div className="min-h-screen bg-base-200 py-10 px-4 md:px-10">
                 <div className="max-w-3xl mx-auto space-y-6">
-
                     {/* Header */}
                     <PageHeader
                         title="Top Candidates"
                         subtitle={`${sorted.length} candidates ranked by Agent 2`}
                         action={
-                            <button className="btn btn-ghost btn-sm gap-1" onClick={() => navigate("/")}>
+                            <button className="btn btn-ghost btn-sm gap-1" onClick={() => navigate('/')}>
                                 <ArrowLeft size={14} /> New Search
                             </button>
                         }
@@ -153,7 +163,7 @@ export default function ResultsPage() {
                         <div className="alert alert-success flex items-center justify-between">
                             <span>🎉 Appointment scheduled! Invitations have been sent to all selected candidates.</span>
                             <div className="flex items-center gap-2">
-                                <button className="btn btn-sm btn-ghost" onClick={() => navigate("/")}>
+                                <button className="btn btn-sm btn-ghost" onClick={() => navigate('/')}>
                                     <ArrowLeft size={14} /> Back to Home
                                 </button>
                                 <button className="btn btn-sm btn-circle btn-ghost" onClick={() => setAppointmentDone(false)}>
@@ -168,7 +178,7 @@ export default function ResultsPage() {
                         <div className="card bg-base-100 border border-base-300">
                             <div className="card-body items-center text-center py-12">
                                 <p className="text-base-content/40 text-sm">No candidates found.</p>
-                                <button className="btn btn-primary btn-sm mt-3" onClick={() => navigate("/")}>
+                                <button className="btn btn-primary btn-sm mt-3" onClick={() => navigate('/')}>
                                     Back to Search
                                 </button>
                             </div>
@@ -180,7 +190,7 @@ export default function ResultsPage() {
                                     key={profile.name}
                                     profile={profile}
                                     rank={i}
-                                    selected={selected.some(p => p.username === profile.name)}
+                                    selected={selected.some((p) => p.username === profile.name)}
                                     onToggle={() => toggleSelect(profile.name, profile.email)}
                                 />
                             ))}
@@ -189,7 +199,8 @@ export default function ResultsPage() {
 
                     <div className="flex items-center justify-between bg-base-100 border border-base-300 rounded-box p-4">
                         <p className="text-sm text-base-content/70">
-                            {selected.length} candidate{selected.length > 1 ? "s" : ""} selected
+                            {selected.length} candidate
+                            {selected.length > 1 ? 's' : ''} selected
                         </p>
                         <button type="submit" className="btn btn-primary btn-sm" disabled={selected.length === 0}>
                             {agentThreeStarted && !agentThreeFinished && <span className="loading loading-spinner loading-xs" />}
@@ -205,17 +216,12 @@ export default function ResultsPage() {
                     )}
 
                     {agentThreeFinished && freeSlots.length === 0 && !isError && (
-                        <div className="alert alert-warning text-sm">
-                            ⚠️ Agent 3 has finished but found no free slots in the next 7 days.
-                        </div>
+                        <div className="alert alert-warning text-sm">⚠️ Agent 3 has finished but found no free slots in the next 7 days.</div>
                     )}
 
                     {isError && (
-                        <div className="alert alert-error text-sm">
-                            ❌ Something went wrong while checking the calendar. Please try again.
-                        </div>
+                        <div className="alert alert-error text-sm">❌ Something went wrong while checking the calendar. Please try again.</div>
                     )}
-
                 </div>
             </div>
 
@@ -223,10 +229,13 @@ export default function ResultsPage() {
                 <FreeSlotsModal
                     freeSlots={freeSlots}
                     selectedProfiles={selected}
-                    onDone={() => { setShowSlotModal(false); setAppointmentDone(true) }}
+                    onDone={() => {
+                        setShowSlotModal(false);
+                        setAppointmentDone(true);
+                    }}
                     onClose={() => setShowSlotModal(false)}
                 />
             )}
         </form>
-    )
+    );
 }
