@@ -9,8 +9,8 @@ export function useSetFreeSlot() {
 
     const onSubmit = async (selectedSlot: FreeSlot, selectedProfiles: SelectedProfile[]) => {
         const mockedProfiles: SelectedProfile[] = [
-            { username: 'testuser1', email: 'alex.resch02@gmail.com' },
-            { username: 'testuser2', email: 'alex.resch.dev@gmail.com' },
+            { username: 'testuser1', email: 'testuser1@example.com' },
+            { username: 'testuser2', email: 'testuser2@example.com' },
         ];
         selectedProfiles = mockedProfiles;
 

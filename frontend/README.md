@@ -1,73 +1,48 @@
-# React + TypeScript + Vite
+# A2A Hiring Agent Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This contains the frontend for an AI-assisted Github hiring workflow. The UI lets users define search criteria, starts a multi-step agent pipeline, shows ranked candidate profiles, and offers interview scheduling via free calendar slots.
 
-Currently, two official plugins are available:
+## Product idea in 30 seconds
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- You define tech stack, domain, location, and seniority.
+- Agent 1 searches GitHub for matching profiles.
+- Agent 2 evaluates and ranks the top candidates.
+- You select candidates and you can give permission to the programm so it connects to your google calendar to see your free slots.
+- Agent 3 schedules the interview and send inventation emails to the selected candidates if their email is public.
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Multi-step search form with tabs (Tech Stack, Domain & Location, Experience, Filters)
+- Live status updates via streaming responses (Agent 1/2/3 progress)
+- Results list with score ring, sub-scores, strengths/weaknesses, and reasoning
+- Candidate selection and scheduling flow with config modal
+- Tailwind/DaisyUI styling and compact layout
 
-## Expanding the ESLint configuration
+## Tech stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- React 19 + TypeScript
+- Vite
+- React Router
+- React Hook Form
+- Tailwind CSS + DaisyUI
+- lucide-react icons
 
-```js
-export default defineConfig([
-    globalIgnores(['dist']),
-    {
-        files: ['**/*.{ts,tsx}'],
-        extends: [
-            // Other configs...
+## Requirements
 
-            // Remove tseslint.configs.recommended and replace with this
-            tseslint.configs.recommendedTypeChecked,
-            // Alternatively, use this for stricter rules
-            tseslint.configs.strictTypeChecked,
-            // Optionally, add this for stylistic rules
-            tseslint.configs.stylisticTypeChecked,
+- Node.js (LTS recommended)
+- A running backend at `http://localhost:8000`
 
-            // Other configs...
-        ],
-        languageOptions: {
-            parserOptions: {
-                project: ['./tsconfig.node.json', './tsconfig.app.json'],
-                tsconfigRootDir: import.meta.dirname,
-            },
-            // other options...
-        },
-    },
-]);
+## Local setup
+
+```bas
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Backend
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x';
-import reactDom from 'eslint-plugin-react-dom';
+Be sure to run the backend as the README.md file says in this repo backend folder: [`../backend/README.md`](../backend/README.md).
 
-export default defineConfig([
-    globalIgnores(['dist']),
-    {
-        files: ['**/*.{ts,tsx}'],
-        extends: [
-            // Other configs...
-            // Enable lint rules for React
-            reactX.configs['recommended-typescript'],
-            // Enable lint rules for React DOM
-            reactDom.configs.recommended,
-        ],
-        languageOptions: {
-            parserOptions: {
-                project: ['./tsconfig.node.json', './tsconfig.app.json'],
-                tsconfigRootDir: import.meta.dirname,
-            },
-            // other options...
-        },
-    },
-]);
-```
+## Known limitation (showcase)
+
+In `src/pages/resultsPage/useSetFreeSlot.ts`, `selectedProfiles` is currently replaced with mock data. For real end-to-end demos, remove this.
