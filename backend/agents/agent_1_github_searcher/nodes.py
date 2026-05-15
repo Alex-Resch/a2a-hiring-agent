@@ -11,6 +11,7 @@ from shared.functions import fetch
 
 
 def build_github_query(criteria: dict) -> str:
+    """Build a GitHub search query string from structured criteria."""
     parts = []
 
     if langs := criteria.get("languages"):
@@ -26,6 +27,7 @@ def build_github_query(criteria: dict) -> str:
 
 
 def search_profiles(state: AgentState) -> AgentState:
+    """Search GitHub users and store their logins in state."""
     query = build_github_query(json.loads(state.user_input))
     response = fetch("/search/users", params={"q": query, "per_page": 2, "page": 1})
 
@@ -35,7 +37,7 @@ def search_profiles(state: AgentState) -> AgentState:
 
 
 def get_profile_details(state: AgentState) -> AgentState:
-    """Add DocString later"""
+    """Fetch repo and commit details for found profiles with emails."""
     profile_details: list[ProfileDetails] = []
 
     for profile in state.found_profiles:

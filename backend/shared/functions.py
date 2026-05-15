@@ -7,6 +7,7 @@ BASE_URL = "https://api.github.com"
 
 
 def fetch(url: str, params: dict | None = None) -> httpx.Response:
+    """Fetch a GitHub API endpoint with auth headers applied."""
     return httpx.get(
         BASE_URL + url,
         headers={

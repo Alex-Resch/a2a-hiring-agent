@@ -13,7 +13,10 @@ from agents.agent_1_github_searcher.state import AgentState
 
 
 class GithubSearcherExecutor(AgentExecutor):
+    """Execute the GitHub profile search graph for incoming requests."""
+
     async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:
+        """Run the graph and emit the found profiles as a text message."""
         user_input = context.get_user_input()
         result = app.invoke(
             AgentState(user_input=user_input, found_profiles=[], profiles_details=[])
@@ -22,6 +25,7 @@ class GithubSearcherExecutor(AgentExecutor):
         await event_queue.enqueue_event(new_agent_text_message(output))
 
     async def cancel(self, context: RequestContext, event_queue: EventQueue) -> None:
+        """Reject cancellation since it is not supported."""
         raise Exception("cancel not supported")
 
 

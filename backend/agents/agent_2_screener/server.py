@@ -13,7 +13,10 @@ from agents.agent_2_screener.state import AgentState
 
 
 class GithubScreenerExecutor(AgentExecutor):
+    """Execute the screening graph for incoming requests."""
+
     async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:
+        """Run the graph and emit scored profiles as a text message."""
         user_input = context.get_user_input()
         data = json.loads(user_input)
         profiles_details = data["profiles"]
@@ -28,6 +31,7 @@ class GithubScreenerExecutor(AgentExecutor):
         await event_queue.enqueue_event(new_agent_text_message(output))
 
     async def cancel(self, context: RequestContext, event_queue: EventQueue) -> None:
+        """Reject cancellation since it is not supported."""
         raise Exception("cancel not supported")
 
 

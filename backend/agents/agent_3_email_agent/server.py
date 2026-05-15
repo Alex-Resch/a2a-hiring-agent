@@ -12,7 +12,10 @@ from agents.agent_3_email_agent.graph import calendar_phase1_app, calendar_phase
 
 
 class CalendarAgentExecutor(AgentExecutor):
+    """Execute calendar and email flows based on request payload."""
+
     async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:
+        """Run phase 1 or 2 and emit the result as a text message."""
         user_input = json.loads(context.get_user_input())
 
         if "selected_slot" not in user_input:
@@ -41,6 +44,7 @@ class CalendarAgentExecutor(AgentExecutor):
         await event_queue.enqueue_event(new_agent_text_message(output))
 
     async def cancel(self, context: RequestContext, event_queue: EventQueue) -> None:
+        """Reject cancellation since it is not supported."""
         raise Exception("cancel not supported")
 
 

@@ -4,6 +4,8 @@ from agents.agent_3_email_agent.state import FreeSlot
 
 
 class SearchRequest(BaseModel):
+    """Search criteria submitted by the recruiter."""
+
     languages: list[str] = []
     frameworks: list[str] = []
     domains: list[str] = []
@@ -17,14 +19,20 @@ class SearchRequest(BaseModel):
 
 
 class SelectedProfile(BaseModel):
+    """Selected profile identifiers used for scheduling."""
+
     username: str
     email: str | None = None
 
 
 class CalendarPhase1Request(BaseModel):
+    """Request payload to check busy/free slots."""
+
     selected_profiles: list[SelectedProfile]
 
 
 class CalendarPhase2Request(BaseModel):
+    """Request payload to schedule an interview slot."""
+
     selected_profiles: list[SelectedProfile]
     selected_slot: FreeSlot

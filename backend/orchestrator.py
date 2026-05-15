@@ -17,6 +17,7 @@ from shared.models import SearchRequest, SelectedProfile
 
 
 async def run_calendar_phase1(selected_profiles: list) -> AsyncGenerator[dict, None]:
+    """Ask the calendar agent for busy/free slots for given profiles."""
     async with httpx.AsyncClient(timeout=300) as http_client:
         yield {"status": "Agent 3 is checking calendar..."}
 
@@ -69,6 +70,7 @@ async def run_calendar_phase2(
     selected_profiles: list[SelectedProfile],
     selected_slot: FreeSlot,
 ) -> AsyncGenerator[dict, None]:
+    """Schedule an appointment for selected profiles and a chosen slot."""
     async with httpx.AsyncClient(timeout=300) as http_client:
         yield {"status": "Agent 3 is scheduling appointment..."}
 
@@ -106,6 +108,7 @@ async def run_calendar_phase2(
 
 
 async def run(request: SearchRequest) -> AsyncGenerator[dict, None]:
+    """Run the full search flow: GitHub search then profile scoring."""
     user_input = json.dumps(request.model_dump())
 
     async with httpx.AsyncClient(timeout=300) as http_client:

@@ -22,6 +22,7 @@ SLOT_DURATION = timedelta(minutes=60)
 
 
 def get_credentials():
+    """Load OAuth credentials, running the local flow if needed."""
     creds = None
     if os.path.exists("token.json"):
         creds = Credentials.from_authorized_user_file("token.json", SCOPES)
@@ -37,14 +38,17 @@ def get_credentials():
 
 
 def get_calendar_service():
+    """Build a Google Calendar API client."""
     return build("calendar", "v3", credentials=get_credentials())
 
 
 def get_gmail_service():
+    """Build a Gmail API client for sending messages."""
     return build("gmail", "v1", credentials=get_credentials())
 
 
 def check_busy_slots(state: AgentState):
+    """Fetch upcoming busy slots from the primary calendar."""
     service = get_calendar_service()
 
     now = datetime.now(timezone.utc)
@@ -77,6 +81,7 @@ def check_busy_slots(state: AgentState):
 
 
 def get_free_slots(state: AgentState):
+    """Compute free slots for the next week within work hours."""
     busy_slots = sorted(state.busy_slots, key=lambda s: s.start)
 
     free_slots = []
@@ -118,6 +123,7 @@ def get_free_slots(state: AgentState):
 
 
 def create_appointment(state: AgentState):
+    """Create calendar events for selected profiles and slot."""
     service = get_calendar_service()
 
     if state.selected_slot is None:
@@ -145,6 +151,7 @@ def create_appointment(state: AgentState):
 
 
 def build_email_message(username: str, slot: FreeSlot) -> MIMEText:
+    """Build the HTML interview invitation email body."""
     return MIMEText(
         f"""
       <html>
@@ -165,6 +172,7 @@ def build_email_message(username: str, slot: FreeSlot) -> MIMEText:
 
 
 def send_interview_invitations(state: AgentState):
+    """Send interview invitation emails for all selected profiles."""
     service = get_gmail_service()
 
     emails_sent = []

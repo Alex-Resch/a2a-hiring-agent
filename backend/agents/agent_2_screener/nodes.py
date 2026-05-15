@@ -44,6 +44,7 @@ Be objective, fair, and base your evaluation only on the data provided. Do not m
 
 
 def build_user_prompt(profile_str: str, state: AgentState):
+    """Build a user prompt that blends profile data with search criteria."""
     return f"""
     Here are the details about the candidate:
     **{profile_str}**
@@ -58,6 +59,7 @@ def build_user_prompt(profile_str: str, state: AgentState):
 
 
 def score_profiles(state: AgentState):
+    """Score each profile with the LLM and return structured results."""
     scored_profiles: list[ProfileScore] = []
 
     for profile in state.profiles_details:

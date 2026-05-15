@@ -18,17 +18,21 @@ app.add_middleware(
 
 
 async def event_stream(request):
+    """Stream events from the main search orchestrator as SSE."""
     async for event in run(request):
         yield f"data: {json.dumps(event)}\n\n"
 
 
 @app.post("/search")
 async def search(request: SearchRequest):
+    """Start profile search and return an SSE stream."""
     return StreamingResponse(event_stream(request), media_type="text/event-stream")
 
 
 @app.post("/calendar/slots")
 async def calendar_slots(request: CalendarPhase1Request):
+    """Stream available interview slots for selected profiles."""
+
     async def stream():
         async for event in run_calendar_phase1(request.selected_profiles):
             yield f"data: {json.dumps(event)}\n\n"
@@ -38,6 +42,8 @@ async def calendar_slots(request: CalendarPhase1Request):
 
 @app.post("/calendar/schedule")
 async def calendar_schedule(request: CalendarPhase2Request):
+    """Schedule interviews for a chosen slot and stream status."""
+
     async def stream():
         async for event in run_calendar_phase2(
             request.selected_profiles,

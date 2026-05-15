@@ -3,17 +3,23 @@ from pydantic import BaseModel
 
 
 class EmailSent(BaseModel):
+    """Result of sending an email to a profile."""
+
     profile: str
     status: str
     error_message: str | None = None
 
 
 class BusySlot(BaseModel):
+    """Time window that is already occupied on the calendar."""
+
     start: datetime
     end: datetime
 
 
 class FreeSlot(BusySlot):
+    """Available time window that can be scheduled."""
+
     pass
 
 
