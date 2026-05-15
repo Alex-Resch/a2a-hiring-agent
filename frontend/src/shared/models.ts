@@ -21,6 +21,13 @@ export interface SelectedProfile {
     email: string | null;
 }
 
+export interface CalendarPhase1Request {
+    selected_profiles: SelectedProfile[];
+    work_start_hour: number;
+    work_end_hour: number;
+    appointment_duration: number;
+}
+
 export interface CalendarPhase2Request {
     selected_profiles: SelectedProfile[];
     selected_slot: FreeSlot;

@@ -5,6 +5,8 @@ import { useState } from 'react';
 import PageHeader from '../../shared/components/PageHeader';
 import { useSetSelected } from './useSetSelected.ts';
 import FreeSlotsModal from './FreeSlotsModal.tsx';
+import ConfigModal from './ConfigModal.tsx';
+import type { ConfigData } from '../../shared/types.ts';
 
 const SCORE_CATEGORIES = [
     {
@@ -124,6 +126,7 @@ export default function ResultsPage() {
     const sorted = [...scoredProfiles].sort((a, b) => b.overall_score - a.overall_score);
     const [selected, setSelected] = useState<SelectedProfile[]>([]);
     const [showSlotModal, setShowSlotModal] = useState(true);
+    const [showConfigModal, setShowConfigModal] = useState(false);
     const [appointmentDone, setAppointmentDone] = useState(false);
 
     const { onSubmit, freeSlots, isError, agentThreeStarted, agentThreeFinished } = useSetSelected();
@@ -140,8 +143,12 @@ export default function ResultsPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setShowSlotModal(true);
-        await onSubmit(selected);
+        setShowConfigModal(true);
+    };
+
+    const handleConfigConfirm = async (configData: ConfigData) => {
+        setShowConfigModal(false);
+        await onSubmit(selected, configData);
     };
 
     return (
@@ -236,6 +243,8 @@ export default function ResultsPage() {
                     onClose={() => setShowSlotModal(false)}
                 />
             )}
+
+            {showConfigModal && <ConfigModal onConfirm={handleConfigConfirm} onClose={() => setShowConfigModal(false)} />}
         </form>
     );
 }

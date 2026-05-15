@@ -10,3 +10,9 @@ export type SearchFormData = {
     min_public_repos: number;
     min_stars: number;
 };
+
+export type ConfigData = {
+    work_start_hour: number;
+    work_end_hour: number;
+    appointment_duration: number;
+};
