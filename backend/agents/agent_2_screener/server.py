@@ -35,7 +35,7 @@ class GithubScreenerExecutor(AgentExecutor):
         raise Exception("cancel not supported")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     skill = AgentSkill(
         id="github_screening",
         name="GitHub Profile Screening",

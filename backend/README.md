@@ -156,3 +156,9 @@ curl -N -X POST http://localhost:8000/calendar/schedule \
 ## Local artifacts
 
 `credentials.json` and `token.json` are local-only files. Treat them as secrets and keep them out of version control.
+
+## Tests
+
+```sh
+pytest
+```

@@ -16,7 +16,7 @@ SCOPES = [
 ]
 
 
-def get_credentials():
+def get_credentials():  # pragma: no cover
     """Load OAuth credentials, running the local flow if needed."""
     creds = None
     if os.path.exists("token.json"):
@@ -32,12 +32,12 @@ def get_credentials():
     return creds
 
 
-def get_calendar_service():
+def get_calendar_service():  # pragma: no cover
     """Build a Google Calendar API client."""
     return build("calendar", "v3", credentials=get_credentials())
 
 
-def get_gmail_service():
+def get_gmail_service():  # pragma: no cover
     """Build a Gmail API client for sending messages."""
     return build("gmail", "v1", credentials=get_credentials())
 

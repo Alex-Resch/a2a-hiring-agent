@@ -48,7 +48,7 @@ class CalendarAgentExecutor(AgentExecutor):
         raise Exception("cancel not supported")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     skill = AgentSkill(
         id="calendar_scheduling",
         name="Calendar Scheduling",

@@ -29,7 +29,7 @@ class GithubSearcherExecutor(AgentExecutor):
         raise Exception("cancel not supported")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     skill = AgentSkill(
         id="github_search",
         name="GitHub Profile Search",
