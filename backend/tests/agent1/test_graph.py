@@ -1,14 +1,16 @@
 import json
 
-from agents.agent_1_github_searcher import graph
+import pytest
+from agents.agent_1_github_searcher.graph import app
 from agents.agent_1_github_searcher.state import AgentState
 from tests.conftest import DummyResponse
 
 
-def test_graph_runs_end_to_end(monkeypatch):
+@pytest.mark.anyio
+async def test_graph_runs_end_to_end(monkeypatch):
     """Runs the agent graph end-to-end with mocked fetches."""
 
-    def fake_fetch(url, params=None):
+    async def fake_fetch(url, params=None, client=None):
         if url == "/search/users":
             return DummyResponse({"items": [{"login": "octocat"}]})
         if "/commits/" in url:
@@ -40,6 +42,6 @@ def test_graph_runs_end_to_end(monkeypatch):
         user_input=json.dumps({}), found_profiles=[], profiles_details=[]
     )
 
-    result = graph.app.invoke(state)
+    result = await app.ainvoke(state)
     assert result.profiles_details  # type: ignore[union-attr]
     assert result.profiles_details[0].email == "octo@example.com"  # type: ignore[union-attr]

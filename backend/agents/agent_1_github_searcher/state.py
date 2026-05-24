@@ -48,5 +48,5 @@ class AgentState(BaseModel):
     """State of the agent."""
 
     user_input: str
-    found_profiles: list[str]
-    profiles_details: list[ProfileDetails]
+    found_profiles: list[str] = []
+    profiles_details: list[ProfileDetails] = []

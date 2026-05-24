@@ -4,7 +4,7 @@ from litellm import completion
 from agents.agent_2_screener.state import AgentState, ProfileScore
 
 
-client = instructor.from_litellm(completion)
+client = instructor.from_litellm(completion, mode=instructor.Mode.JSON)
 
 
 SYSTEM_PROMPT = """
@@ -70,8 +70,10 @@ def score_profiles(state: AgentState):
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": build_user_prompt(str(profile), state)},
             ],
+            max_tokens=8192,
         )
         result.email = profile.email
         scored_profiles.append(result)
 
-    return {"scored_profiles": scored_profiles}
+    scored_profiles.sort(key=lambda profile: profile.overall_score, reverse=True)
+    return {"scored_profiles": scored_profiles[:3]}

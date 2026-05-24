@@ -6,9 +6,13 @@ from shared.settings import settings
 BASE_URL = "https://api.github.com"
 
 
-def fetch(url: str, params: dict | None = None) -> httpx.Response:
-    """Fetch a GitHub API endpoint with auth headers applied."""
-    return httpx.get(
+async def fetch(
+    url: str,
+    client: httpx.AsyncClient,
+    params: dict | None = None,
+) -> httpx.Response:
+    """Fetch a GitHub API endpoint asynchronously with auth headers applied."""
+    return await client.get(
         BASE_URL + url,
         headers={
             "Authorization": f"Bearer {settings.GITHUB_TOKEN}",

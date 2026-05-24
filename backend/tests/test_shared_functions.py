@@ -1,25 +1,27 @@
 import httpx
+import pytest
 
 from shared import functions
 
 
-def test_fetch_sets_headers_and_params(monkeypatch):
+@pytest.mark.anyio
+async def test_fetch_sets_headers_and_params():
     """Sets GitHub auth headers and forwards query params."""
 
     seen = {}
 
-    def fake_get(url, headers=None, params=None):
-        seen["url"] = url
-        seen["headers"] = headers
-        seen["params"] = params
-        return "ok"
+    def fake_transport(request):
+        seen["url"] = str(request.url)
+        seen["headers"] = dict(request.headers)
+        seen["params"] = dict(request.url.params)
+        return httpx.Response(200, json={})
 
-    monkeypatch.setattr(httpx, "get", fake_get)
+    async with httpx.AsyncClient(
+        transport=httpx.MockTransport(fake_transport)
+    ) as client:
+        await functions.fetch("/search/users", params={"q": "python"}, client=client)
 
-    result = functions.fetch("/search/users", params={"q": "python"})
-
-    assert result == "ok"
-    assert seen["url"].endswith("/search/users")
-    assert seen["headers"]["Authorization"].startswith("Bearer ")
-    assert seen["headers"]["Accept"] == "application/vnd.github+json"
+    assert "/search/users" in seen["url"]
+    assert seen["headers"]["authorization"].startswith("Bearer ")
+    assert seen["headers"]["accept"] == "application/vnd.github+json"
     assert seen["params"]["q"] == "python"

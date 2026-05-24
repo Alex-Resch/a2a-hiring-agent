@@ -13,7 +13,6 @@ class SearchRequest(BaseModel):
     experience_levels: list[str] = []
     availability: list[str] = []
     min_years_experience: int = 0
-    active_within_months: int = 12
     min_public_repos: int = 0
     min_stars: int = 0
 

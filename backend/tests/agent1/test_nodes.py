@@ -19,7 +19,6 @@ def test_build_github_query_combines_criteria():
             "locations": ["berlin"],
             "min_public_repos": 3,
             "min_stars": 10,
-            "active_within_months": 1,
             "min_years_experience": 5,
             "frameworks": ["django"],
         }
@@ -29,15 +28,15 @@ def test_build_github_query_combines_criteria():
     assert "location:berlin" in query
     assert "repos:>=3" in query
     assert "stars:>=10" in query
-    assert "created:>=" in query
     assert '"5 years"' in query
     assert '"django"' in query
 
 
-def test_search_profiles_uses_fetch(monkeypatch):
+@pytest.mark.anyio
+async def test_search_profiles_uses_fetch(monkeypatch):
     """Calls fetch with a query and stores returned logins."""
 
-    def fake_fetch(_url, params=None):
+    async def fake_fetch(_url, params=None, client=None):
         assert params and "q" in params
         return DummyResponse({"items": [{"login": "octocat"}]})
 
@@ -46,15 +45,16 @@ def test_search_profiles_uses_fetch(monkeypatch):
     state = AgentState(
         user_input=json.dumps({}), found_profiles=[], profiles_details=[]
     )
-    result = nodes.search_profiles(state)
+    result = await nodes.search_profiles(state)
 
     assert result.found_profiles == ["octocat"]
 
 
-def test_get_profile_details_filters_missing_email(monkeypatch):
+@pytest.mark.anyio
+async def test_get_profile_details_filters_missing_email(monkeypatch):
     """Keeps only profiles with email and builds nested details."""
 
-    def fake_fetch(url, params=None):
+    async def fake_fetch(url, params=None, client=None):
         if url.endswith("/repos"):
             return DummyResponse(
                 [
@@ -108,7 +108,7 @@ def test_get_profile_details_filters_missing_email(monkeypatch):
         found_profiles=["octocat", "noemail"],
         profiles_details=[],
     )
-    result = nodes.get_profile_details(state)
+    result = await nodes.get_profile_details(state)
 
     assert len(result.profiles_details) == 1
     profile = result.profiles_details[0]
@@ -129,6 +129,7 @@ _HAPPY_COMMIT_DETAIL = {
 }
 
 
+@pytest.mark.anyio
 @pytest.mark.parametrize(
     "profile,bad_url,bad_response,expect_in",
     [
@@ -169,12 +170,12 @@ _HAPPY_COMMIT_DETAIL = {
         ),
     ],
 )
-def test_get_profile_details_handles_unexpected_shapes(
+async def test_get_profile_details_handles_unexpected_shapes(
     monkeypatch, profile, bad_url, bad_response, expect_in
 ):
     """Skips unexpected response shapes without crashing."""
 
-    def fake_fetch(url, params=None):
+    async def fake_fetch(url, params=None, client=None):
         if bad_url == "/commits/" and "/commits/" in url:
             return bad_response
         if bad_url != "/commits/" and url.endswith(bad_url):
@@ -196,7 +197,7 @@ def test_get_profile_details_handles_unexpected_shapes(
         found_profiles=[profile],
         profiles_details=[],
     )
-    result = nodes.get_profile_details(state)
+    result = await nodes.get_profile_details(state)
     names = {p.name for p in result.profiles_details}
 
     if expect_in:

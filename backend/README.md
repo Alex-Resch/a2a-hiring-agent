@@ -1,4 +1,4 @@
-# A2A Hiring Agent (Backend)
+~~# A2A Hiring Agent (Backend)
 
 A local multi-agent backend that searches GitHub profiles, scores candidates, and schedules interview slots via Google Calendar and Gmail. It exposes an orchestrator API (SSE) and three A2A agent services.
 
@@ -161,4 +161,4 @@ curl -N -X POST http://localhost:8000/calendar/schedule \
 
 ```sh
 pytest
-```
+```~~

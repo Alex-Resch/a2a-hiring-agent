@@ -18,10 +18,9 @@ class GithubSearcherExecutor(AgentExecutor):
     async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:
         """Run the graph and emit the found profiles as a text message."""
         user_input = context.get_user_input()
-        result = app.invoke(
-            AgentState(user_input=user_input, found_profiles=[], profiles_details=[])
-        )
-        output = json.dumps([p.model_dump() for p in result["profiles_details"]])
+        raw = await app.ainvoke(AgentState(user_input=user_input))
+        result = AgentState(**raw) if isinstance(raw, dict) else raw
+        output = json.dumps([p.model_dump() for p in result.profiles_details])
         await event_queue.enqueue_event(new_agent_text_message(output))
 
     async def cancel(self, context: RequestContext, event_queue: EventQueue) -> None:

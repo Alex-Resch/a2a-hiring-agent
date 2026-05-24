@@ -1,3 +1,4 @@
+import inspect
 import sys
 import types
 from typing import Any
@@ -52,6 +53,39 @@ def install_dependency_stubs() -> None:
                             return data
                         node = graph._nodes[current]
                         result = node(data)
+                        if isinstance(result, dict):
+                            if hasattr(data, "model_copy"):
+                                data = getattr(data, "model_copy")(update=result)
+                            elif isinstance(data, dict):
+                                merged = dict(data)
+                                merged.update(result)
+                                data = merged
+                            else:
+                                data = result
+                        else:
+                            data = result
+
+                        next_nodes = graph._edges.get(current, [])
+                        if not next_nodes:
+                            return data
+                        next_node = next_nodes[0]
+                        if next_node is langgraph_graph.END:
+                            return data
+                        current = next_node
+
+                @staticmethod
+                async def ainvoke(state):
+                    current = graph._entry
+                    data = state
+                    while True:
+                        if current is langgraph_graph.END:
+                            return data
+                        if current not in graph._nodes:
+                            return data
+                        node = graph._nodes[current]
+                        result = node(data)
+                        if inspect.isawaitable(result):
+                            result = await result
                         if isinstance(result, dict):
                             if hasattr(data, "model_copy"):
                                 data = getattr(data, "model_copy")(update=result)
@@ -133,11 +167,12 @@ def install_dependency_stubs() -> None:
     a2a_utils.new_agent_text_message = _new_agent_text_message
 
     instructor = _ensure_module("instructor")
-    instructor.from_litellm = lambda _completion: types.SimpleNamespace(
+    instructor.from_litellm = lambda _completion, mode=None: types.SimpleNamespace(
         chat=types.SimpleNamespace(
             completions=types.SimpleNamespace(create=lambda *args, **kwargs: None)
         )
     )
+    instructor.Mode = types.SimpleNamespace(JSON="json")
 
     litellm = _ensure_module("litellm")
     litellm.completion = object()

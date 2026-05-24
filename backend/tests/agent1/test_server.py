@@ -5,7 +5,7 @@ from typing import cast
 from a2a.server.agent_execution import RequestContext
 from a2a.server.events import EventQueue
 from agents.agent_1_github_searcher import server
-from agents.agent_1_github_searcher.state import ProfileDetails
+from agents.agent_1_github_searcher.state import AgentState, ProfileDetails
 
 
 class DummyContext:
@@ -28,9 +28,11 @@ class DummyEventQueue:
 async def test_executor_emits_profiles(monkeypatch):
     """Emits serialized profiles in the event queue."""
 
-    def fake_invoke(_state):
-        return {
-            "profiles_details": [
+    async def fake_ainvoke(_state):
+        return AgentState(
+            user_input="",
+            found_profiles=[],
+            profiles_details=[
                 ProfileDetails(
                     name="octo",
                     email="o@e.com",
@@ -38,11 +40,11 @@ async def test_executor_emits_profiles(monkeypatch):
                     location=None,
                     repos_details=[],
                 )
-            ]
-        }
+            ],
+        )
 
     monkeypatch.setattr(server, "new_agent_text_message", lambda text: {"text": text})
-    monkeypatch.setattr(server.app, "invoke", fake_invoke)
+    monkeypatch.setattr(server.app, "ainvoke", fake_ainvoke)
 
     executor = server.GithubSearcherExecutor()
     context = DummyContext(user_input=json.dumps({}))

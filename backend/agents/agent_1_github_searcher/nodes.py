@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timedelta, timezone
+import httpx
 
 from agents.agent_1_github_searcher.state import (
     AgentState,
@@ -37,10 +37,6 @@ def build_github_query(criteria: dict) -> str:
     if (min_stars := criteria.get("min_stars", 0)) > 0:
         parts.append(f"stars:>={min_stars}")
 
-    if (active_months := criteria.get("active_within_months", 0)) > 0:
-        since = datetime.now(timezone.utc) - timedelta(days=30 * active_months)
-        parts.append(f"created:>={since.date().isoformat()}")
-
     if (min_years := criteria.get("min_years_experience", 0)) > 0:
         add_or_group(
             [
@@ -62,104 +58,120 @@ def build_github_query(criteria: dict) -> str:
     return " ".join(parts) or "type:user"
 
 
-def search_profiles(state: AgentState) -> AgentState:
+async def search_profiles(state: AgentState) -> AgentState:
     """Search GitHub users and store their logins in state."""
     query = build_github_query(json.loads(state.user_input))
-    response = fetch("/search/users", params={"q": query, "per_page": 2, "page": 1})
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        response = await fetch(
+            "/search/users",
+            params={"q": query, "per_page": 10, "page": 1},
+            client=client,
+        )
 
     data = response.json()
     found_profiles = [item["login"] for item in data.get("items", [])]
     return state.model_copy(update={"found_profiles": found_profiles})
 
 
-def get_profile_details(state: AgentState) -> AgentState:
+async def get_profile_details(state: AgentState) -> AgentState:
     """Fetch repo and commit details for found profiles with emails."""
     profile_details: list[ProfileDetails] = []
 
-    for profile in state.found_profiles:
-        repos = fetch(f"/users/{profile}/repos", params={"per_page": 1}).json()
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        for profile in state.found_profiles:
+            repos_response = await fetch(
+                f"/users/{profile}/repos",
+                params={"per_page": 1},
+                client=client,
+            )
+            repos = repos_response.json()
 
-        if not isinstance(repos, list):
-            continue
-        repo_details: list[RepoDetails] = []
-
-        for repo in repos:
-            if not isinstance(repo, dict):
+            if not isinstance(repos, list):
                 continue
+            repo_details: list[RepoDetails] = []
 
-            commits = fetch(
-                f"/repos/{profile}/{repo.get('name')}/commits",
-                params={"author": profile, "per_page": 1},
-            ).json()
-
-            if not isinstance(commits, list):
-                continue
-
-            commit_details: list[CommitDetails] = []
-            for c in commits:
-                if not isinstance(c, dict):
+            for repo in repos:
+                if not isinstance(repo, dict):
                     continue
 
-                commit_detail_response = fetch(
-                    f"/repos/{profile}/{repo.get('name')}/commits/{c.get('sha')}"
-                ).json()
+                commits_response = await fetch(
+                    f"/repos/{profile}/{repo.get('name')}/commits",
+                    params={"author": profile, "per_page": 1},
+                    client=client,
+                )
+                commits = commits_response.json()
 
-                if not isinstance(commit_detail_response, dict):
+                if not isinstance(commits, list):
                     continue
 
-                files = commit_detail_response.get("files", [])
-
-                file_details: list[FileDetails] = []
-                for file in files:
-                    if not isinstance(file, dict):
+                commit_details: list[CommitDetails] = []
+                for c in commits:
+                    if not isinstance(c, dict):
                         continue
 
-                    file_detail = FileDetails(
-                        filename=file.get("filename"),
-                        status=file.get("status"),
-                        additions=file.get("additions"),
-                        deletions=file.get("deletions"),
-                        changes=file.get("changes"),
-                        diff=file.get("patch"),
+                    commit_detail_response = await fetch(
+                        f"/repos/{profile}/{repo.get('name')}/commits/{c.get('sha')}",
+                        client=client,
+                    )
+                    commit_detail_data = commit_detail_response.json()
+
+                    if not isinstance(commit_detail_data, dict):
+                        continue
+
+                    files = commit_detail_data.get("files", [])
+
+                    file_details: list[FileDetails] = []
+                    for file in files:
+                        if not isinstance(file, dict):
+                            continue
+
+                        file_detail = FileDetails(
+                            filename=file.get("filename"),
+                            status=file.get("status"),
+                            additions=file.get("additions"),
+                            deletions=file.get("deletions"),
+                            changes=file.get("changes"),
+                            diff=file.get("patch"),
+                        )
+
+                        file_details.append(file_detail)
+
+                    commit = c.get("commit")
+                    if not isinstance(commit, dict):
+                        continue
+
+                    stats = commit_detail_data.get("stats", {})
+
+                    commit_detail = CommitDetails(
+                        message=commit.get("message"),
+                        date_time=commit.get("date"),
+                        total_changes=stats.get("total"),
+                        total_additions=stats.get("additions"),
+                        total_deletions=stats.get("deletions"),
+                        files_details=file_details,
                     )
 
-                    file_details.append(file_detail)
+                    commit_details.append(commit_detail)
 
-                commit = c.get("commit")
-                if not isinstance(commit, dict):
-                    continue
-
-                stats = commit_detail_response.get("stats", {})
-
-                commit_detail = CommitDetails(
-                    message=commit.get("message"),
-                    date_time=commit.get("date"),
-                    total_changes=stats.get("total"),
-                    total_additions=stats.get("additions"),
-                    total_deletions=stats.get("deletions"),
-                    files_details=file_details,
+                repo_detail = RepoDetails(
+                    name=repo.get("name"),
+                    description=repo.get("description"),
+                    language=repo.get("language"),
+                    stars=repo.get("stargazers_count"),
+                    commits_details=commit_details,
                 )
+                repo_details.append(repo_detail)
 
-                commit_details.append(commit_detail)
+            user_response = await fetch(f"/users/{profile}", client=client)
+            user = user_response.json()
 
-            repo_detail = RepoDetails(
-                name=repo.get("name"),
-                description=repo.get("description"),
-                language=repo.get("language"),
-                stars=repo.get("stargazers_count"),
-                commits_details=commit_details,
+            profile_detail = ProfileDetails(
+                name=user.get("login"),
+                email=user.get("email"),
+                bio=user.get("bio"),
+                location=user.get("location"),
+                repos_details=repo_details,
             )
-            repo_details.append(repo_detail)
-
-        user = fetch(f"/users/{profile}").json()
-
-        profile_detail = ProfileDetails(
-            name=user.get("login"),
-            email=user.get("email"),
-            bio=user.get("bio"),
-            location=user.get("location"),
-            repos_details=repo_details,
-        )
-        if profile_detail.email:
-            profile_details.append(profile_detail)
+            if profile_detail.email:
+                profile_details.append(profile_detail)
     return state.model_copy(update={"profiles_details": profile_details})
