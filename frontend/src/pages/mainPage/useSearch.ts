@@ -15,6 +15,8 @@ export function useSearch() {
     const onSubmit = async (data: SearchFormData) => {
         setModalOpen(true);
 
+        console.log('data: ', data);
+
         await streamFetch('/search', data, (response: StreamResponse) => {
             if (response.status) setStatusText(response.status);
 

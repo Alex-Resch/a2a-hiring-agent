@@ -1,20 +1,6 @@
 import { useState } from 'react';
 import { useForm, type UseFormRegister } from 'react-hook-form';
-import {
-    Search,
-    Code2,
-    Boxes,
-    Globe,
-    BarChart2,
-    CalendarClock,
-    GitFork,
-    Star,
-    Briefcase,
-    Clock,
-    Bot,
-    ChevronRight,
-    SlidersHorizontal,
-} from 'lucide-react';
+import { Search, Code2, Boxes, Globe, BarChart2, GitFork, Star, Briefcase, Clock, Bot, ChevronRight, SlidersHorizontal } from 'lucide-react';
 import AgentProgressModal from './AgentProgessModal';
 import { useSearch } from './useSearch';
 import PageHeader from '../../shared/components/PageHeader.tsx';
@@ -59,7 +45,6 @@ type SearchFormData = {
     experience_levels: string[];
     availability: string[];
     min_years_experience: number;
-    active_within_months: number;
     min_public_repos: number;
     min_stars: number;
 };
@@ -102,14 +87,12 @@ export default function SearchPage() {
             experience_levels: [],
             availability: [],
             min_years_experience: 0,
-            active_within_months: 12,
             min_public_repos: 0,
             min_stars: 0,
         },
     });
 
     const minYears = watch('min_years_experience');
-    const activeMonths = watch('active_within_months');
 
     return (
         <div className="min-h-screen bg-base-200 py-10 px-4 md:px-10">
@@ -256,30 +239,6 @@ export default function SearchPage() {
                                             <span>5</span>
                                             <span>10</span>
                                             <span>15+</span>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <div className="flex justify-between mb-2">
-                                            <label className="text-sm font-medium flex items-center gap-1.5">
-                                                <CalendarClock size={ICON_XS} className="text-secondary" />
-                                                Active Within
-                                            </label>
-                                            <span className="text-sm font-mono text-secondary tabular-nums">{activeMonths} months</span>
-                                        </div>
-                                        <input
-                                            type="range"
-                                            min="1"
-                                            max="24"
-                                            step="1"
-                                            className="range range-secondary range-sm w-full"
-                                            {...register('active_within_months', { valueAsNumber: true })}
-                                        />
-                                        <div className="flex justify-between text-xs text-base-content/30 mt-1 px-0.5">
-                                            <span>1m</span>
-                                            <span>6m</span>
-                                            <span>12m</span>
-                                            <span>24m</span>
                                         </div>
                                     </div>
 
